@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Personal Finance Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Personal Finance Tracker</h1>
+    <nav class="top-nav">
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('add_transaction') }}">Add&nbsp;Transaction</a>
+        <span class="user">{{ current_user.username }}</span>
+        <button id="themeToggle" class="btn ghost" type="button" aria-label="Toggle theme">🌓</button>
+        <a href="{{ url_for('logout') }}">Sign&nbsp;out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Sign&nbsp;in</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}
+      <ul class="flash">
+        {% for cat,msg in msgs %}<li class="{{ cat }}">{{ msg }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <script>
+    // Theme toggle (persisted)
+    (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem('pft-theme'); if (saved) root.setAttribute('data-theme', saved);
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.addEventListener('click', () => {
+        const next = (root.getAttribute('data-theme') || 'dark') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next); localStorage.setItem('pft-theme', next);
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
+
+

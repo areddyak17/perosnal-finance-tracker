@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="form-wrapper nice-card">
+  <h2>Add Transaction</h2>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}<ul class="flash">{% for cat,msg in msgs %}<li class="{{ cat }}">{{ msg }}</li>{% endfor %}</ul>{% endif %}
+  {% endwith %}
+
+  <div class="segmented" role="tablist" aria-label="Transaction type">
+    <input type="radio" id="type-expense" name="txType" checked><label for="type-expense">Expense</label>
+    <input type="radio" id="type-income"  name="txType"><label for="type-income">Income</label>
+  </div>
+
+  {% if recent_categories %}
+  <div class="chips">
+    {% for c in recent_categories %}
+      <button type="button" class="chip" data-cat="{{ c }}">{{ c }}</button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form id="txForm" method="post">
+    <div class="grid-2">
+      <label>Date
+        <input type="date" name="date" id="date" required value="{{ today }}">
+      </label>
+      <label>Category
+        <select name="category" id="category" required></select>
+      </label>
+    </div>
+
+    <label>Description
+      <input type="text" name="description" id="desc" placeholder="e.g. Grocery run" required autofocus>
+    </label>
+
+    <div class="amount-row">
+      <label class="amount-label">Amount
+        <input type="number" name="amount" id="amount" step="0.01" required placeholder="0.00">
+      </label>
+      <div class="quick">
+        <button type="button" data-add="10">+10</button>
+        <button type="button" data-add="20">+20</button>
+        <button type="button" data-add="50">+50</button>
+        <button type="button" data-add="100">+100</button>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="ticket">
+        <div><strong id="p-cat">Food</strong> • <span id="p-date">{{ today }}</span></div>
+        <div id="p-desc" class="muted">—</div>
+        <div id="p-amt" class="amt">$0.00</div>
+      </div>
+    </div>
+
+    <p class="tip">For expense categories you can enter a positive number — it will be saved as a negative automatically.</p>
+
+    <button id="saveBtn" type="submit" class="btn">Save</button>
+  </form>
+</section>
+
+<script>
+const incomeCats  = {{ income_categories|tojson }};
+const expenseCats = {{ expense_categories|tojson }};
+
+const catSelect = document.getElementById('category');
+const rExpense  = document.getElementById('type-expense');
+const rIncome   = document.getElementById('type-income');
+
+function fillCategories(type){
+  const src = type === 'income' ? incomeCats : expenseCats;
+  catSelect.innerHTML = '';
+  src.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; catSelect.appendChild(o); });
+  catSelect.value = type === 'income' ? 'Salary' : 'Food';
+  updatePreview();
+}
+fillCategories('expense');
+
+rExpense.addEventListener('change', ()=> fillCategories('expense'));
+rIncome .addEventListener('change', ()=> fillCategories('income'));
+
+document.querySelectorAll('.chip').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const v = b.dataset.cat;
+    if (incomeCats.includes(v)) { rIncome.checked=true; fillCategories('income'); }
+    if (expenseCats.includes(v)) { rExpense.checked=true; fillCategories('expense'); }
+    catSelect.value = v; updatePreview();
+  });
+});
+
+document.querySelectorAll('.quick button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const add = parseFloat(btn.dataset.add);
+    const input = document.getElementById('amount');
+    const val = parseFloat(input.value || '0');
+    input.value = (val + add).toFixed(2);
+    updatePreview(); input.focus();
+  });
+});
+
+['date','desc','amount'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreview);
+});
+catSelect.addEventListener('input', updatePreview);
+
+function updatePreview(){
+  document.getElementById('p-date').textContent = document.getElementById('date').value || '{{ today }}';
+  document.getElementById('p-cat').textContent  = catSelect.value;
+  document.getElementById('p-desc').textContent = document.getElementById('desc').value || '—';
+  const val = parseFloat(document.getElementById('amount').value || '0');
+  document.getElementById('p-amt').textContent = '$' + val.toFixed(2);
+}
+
+document.getElementById('txForm').addEventListener('submit', ()=>{
+  const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Saving…';
+});
+</script>
+{% endblock %}
+
+
+
+
