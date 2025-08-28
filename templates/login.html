@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-wrapper" style="max-width:500px;">
+  <h2>Sign in</h2>
+  <form method="post">
+    <label>Username <input type="text" name="username" required></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Sign in</button>
+  </form>
+  <p style="margin-top:1rem;">New here? <a href="{{ url_for('signup') }}">Create an account</a>.</p>
+</section>
+{% endblock %}
+

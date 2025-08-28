@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-wrapper">
+  <h2>Add Transaction</h2>
+  <form method="post">
+    <label>Date <input type="date" name="date" required></label>
+    <label>Description <input type="text" name="description" required></label>
+    <label>Category
+      <select name="category">
+        {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Amount (positive number) <input type="number" step="0.01" name="amount" required></label>
+    <button type="submit">Save</button>
+  </form>
+  <p style="margin-top:1rem;font-size:.9rem;color:#aaa">
+    *If you pick an expense category the amount is stored as negative automatically.
+  </p>
+</section>
+{% endblock %}
+
+
+
+
+

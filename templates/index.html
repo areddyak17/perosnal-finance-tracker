@@ -1,0 +1,107 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="grid">
+  <div class="card balance">
+    <h2>Available Balance</h2>
+    <p class="value">${{ '%.2f'|format(summary.balance) }}</p>
+  </div>
+
+  <div class="card networth">
+    <h3>Total Net Worth</h3>
+    <p class="value">${{ net_worth|float|round(2) }}</p>
+  </div>
+
+  <div class="card small-chart">
+    <h3>Spendings</h3>
+    <canvas id="spendLine"></canvas>
+  </div>
+
+  <div class="card categories">
+    <h3>Top Categories</h3>
+    <ul>
+    {% for cat,val in summary.category_totals|dictsort(false,'value') %}
+      <li>{{ cat }} — {{ '%.2f'|format(val) }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card small-chart">
+    <h3>Income (Monthly)</h3>
+    <canvas id="incomeLine"></canvas>
+  </div>
+
+  <div class="card small-chart">
+    <h3>Income & Expenses</h3>
+    <canvas id="incomeExpense"></canvas>
+  </div>
+
+  <!-- NEW: Spending by Category (doughnut) -->
+  <div class="card small-chart">
+    <h3>Spending by Category</h3>
+    <canvas id="expPie"></canvas>
+  </div>
+
+  <div class="card small-chart">
+    <h3>Assets</h3>
+    <canvas id="assetsDonut"></canvas>
+  </div>
+
+  <div class="card span-2 insight">
+    <h3>AI Insight</h3>
+    <ul>
+      {% for msg in summary.insights %}
+        <li>{{ msg|safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<script>
+  const months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const income  = {{ income|safe }};
+  const expense = {{ expense|safe }};
+
+  new Chart(document.getElementById('incomeLine'), {
+    type: 'line',
+    data: { labels: months, datasets: [{ data: income, tension:0.4 }] },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+
+  new Chart(document.getElementById('spendLine'), {
+    type: 'line',
+    data: { labels: months, datasets: [{ data: expense.map(v=>-v), borderColor:'#ff5e5e', tension:0.4 }] },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+
+  new Chart(document.getElementById('incomeExpense'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'Income',   data: income,  borderColor:'#4af0b3', tension:0.4 },
+        { label:'Expenses', data: expense, borderColor:'#ff5e5e', tension:0.4 }
+      ]
+    },
+    options: { scales:{ y:{ beginAtZero:true } } }
+  });
+
+  new Chart(document.getElementById('assetsDonut'), {
+    type:'doughnut',
+    data:{ labels: {{ asset_labels|safe }}, datasets:[{ data: {{ asset_values|safe }} }] }
+  });
+
+  // NEW: Spending by Category doughnut (expense-only)
+  const expVals = {{ exp_values|safe }};
+  if (expVals.length){
+    new Chart(document.getElementById('expPie'), {
+      type:'doughnut',
+      data:{ labels: {{ exp_labels|safe }}, datasets:[{ data: expVals }] }
+    });
+  }
+</script>
+{% endblock %}
+
+
+
+
+
