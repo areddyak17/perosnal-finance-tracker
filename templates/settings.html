@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-wrapper" style="max-width:500px;">
+  <h2>Settings</h2>
+  <form method="post">
+    <label>Currency
+      <select name="currency">
+        {% for c in currencies %}
+          <option value="{{ c }}" {% if c==current %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Save</button>
+  </form>
+  <p style="margin-top:.6rem;opacity:.8">
+    Amounts you enter are interpreted in your selected currency and stored in USD internally.
+  </p>
+</section>
+{% endblock %}
